@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel del Reclutador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-4">
+
+    <div class="container">
+        <!-- Encabezado con información y botón -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card p-3">
+                    <h4>Información del Reclutador</h4>
+                    <p><strong>Nombre:</strong> Samuel Molina</p>
+                    <p><strong>Email:</strong> Correo</p>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-start justify-content-end">
+                <a href="{% url 'crear_vacante' %}" class="btn btn-primary btn-lg">+ Nueva Vacante</a>
+            </div>
+        </div>
+
+        <!-- Historial de vacantes -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Historial de Vacantes</h5>
+            </div>
+            {% for vacante in vacantes %}
+    <div class="card">
+        <h5>{{ vacante.titulo }}</h5>
+        <p>{{ vacante.descripcion }}</p>
+    </div>
+{% endfor %}
+        </div>
+
+        <!-- Botón volver -->
+        <a href="{% url 'home' %}" class="btn btn-secondary mt-4">Volver al inicio</a>
+    </div>
+
+</body>
+</html>
