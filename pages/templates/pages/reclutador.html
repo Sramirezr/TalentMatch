@@ -7,37 +7,54 @@
 </head>
 <body class="bg-light p-4">
 
-    <div class="container">
-        <!-- Encabezado con información y botón -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="card p-3">
-                    <h4>Información del Reclutador</h4>
-                    <p><strong>Nombre:</strong> Samuel Molina</p>
-                    <p><strong>Email:</strong> Correo</p>
-                </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-start justify-content-end">
-                <a href="{% url 'crear_vacante' %}" class="btn btn-primary btn-lg">+ Nueva Vacante</a>
+<div class="container">
+    <!-- Encabezado con información y botón -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class=a"card p-3">
+                <h4>Información del Reclutador</h4>
+                <p><strong>Nombre:</strong> Samuel Molina</p>
+                <p><strong>Email:</strong> Correo</p>
             </div>
         </div>
+        <div class="col-md-4 d-flex align-items-start justify-content-end">
+            <a href="{% url 'crear_vacante' %}" class="btn btn-primary btn-lg">+ Nueva Vacante</a>
+        </div>
+    </div>
 
-        <!-- Historial de vacantes -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Historial de Vacantes</h5>
-            </div>
-            {% for vacante in vacantes %}
+    <!-- Historial de Vacantes con scroll interactivo -->
     <div class="card">
-        <h5>{{ vacante.titulo }}</h5>
-        <p>{{ vacante.descripcion }}</p>
-    </div>
-{% endfor %}
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Vacantes</h5>
         </div>
-
-        <!-- Botón volver -->
-        <a href="{% url 'home' %}" class="btn btn-secondary mt-4">Volver al inicio</a>
+        <div style="max-height: 600px; min-height: 300px; overflow-y: auto;">
+            {% for vacante in vacantes %}
+                <div class="card mb-2 hoverable" style="cursor: pointer;">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="text-decoration-none">{{ vacante.titulo }}</a>
+                        </h5>
+                        <p class="card-text">{{ vacante.descripcion }}</p>
+                        <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="btn btn-outline-primary btn-sm">Ver detalles</a>
+                        <a href="#" class="btn btn-outline-warning btn-sm disabled">Editar</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted p-3">Aún no hay vacantes creadas.</p>
+            {% endfor %}
+        </div>
     </div>
 
+    <!-- Botón volver -->
+    <a href="{% url 'home' %}" class="btn btn-secondary mt-4">Volver al inicio</a>
+</div>
+
+<!-- Opcional: Estilo para resaltar al pasar el mouse -->
+<style>
+.hoverable:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    background-color: #f8f9fa;
+}
+</style>
 </body>
 </html>

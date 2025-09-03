@@ -21,6 +21,9 @@
 </head>
 <body class="bg-light p-4">
 
+    <a href="{% url 'home' %}" class="btn btn-secondary mb-3">Volver</a>
+    <!-- Si no tienes la url, puedes usar: <a href="/home/" class="btn btn-secondary mb-3">Volver</a> -->
+
     <h1 class="mb-4">Buscar Vacantes</h1>
 
     <!-- Buscador -->
@@ -28,13 +31,13 @@
         <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por título">
     </form>
 
-    <!-- Contenedor con dos columnas -->
     <div class="row">
         <!-- Lista de vacantes -->
         <div class="col-md-4">
             <div class="list-group vacantes-lista">
                 {% for vacante in vacantes %}
-                    <a href="#" class="list-group-item list-group-item-action">
+                    <a href="?vacante_id={{ vacante.id }}{% if query %}&q={{ query }}{% endif %}"
+                       class="list-group-item list-group-item-action {% if vacante.id|stringformat:"s" == selected_id %}active{% endif %}">
                         {{ vacante.titulo }}
                     </a>
                 {% empty %}
@@ -42,10 +45,22 @@
                 {% endfor %}
             </div>
         </div>
-
         <!-- Detalle de la vacante -->
         <div class="col-md-8">
             <div class="vacante-detalle">
-                <h3>Desarrollador Web</h3>
-                <p><strong>Ubicación:</strong> Medellín, Colombia</p>
-                <p>
+                {% if vacante_seleccionada %}
+                    <h3>{{ vacante_seleccionada.titulo }}</h3>
+                    <p><strong>Ubicación:</strong> {{ vacante_seleccionada.ubicacion }}</p>
+                    <p><strong>Descripción:</strong> {{ vacante_seleccionada.descripcion }}</p>
+                    <p><strong>Palabras clave:</strong> {{ vacante_seleccionada.palabras_clave }}</p>
+                    <p><strong>Rango salarial:</strong> {{ vacante_seleccionada.rango_salarial }}</p>
+                    <p><strong>Fecha de publicación:</strong> {{ vacante_seleccionada.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                {% else %}
+                    <p class="text-muted">Selecciona una vacante para ver los detalles.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Vacante
 
 # Create your views here.
@@ -7,11 +7,19 @@ def home_view(request):
 
 def postulante_view(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
-    return render(request, 'pages/postulante.html', {"vacantes": vacantes})
+    selected_id = request.GET.get('vacante_id')
+    vacante_seleccionada = Vacante.objects.filter(pk=selected_id).first() if selected_id else None
+    return render(request, 'pages/postulante.html', {
+        "vacantes": vacantes,
+        "vacante_seleccionada": vacante_seleccionada,
+        "selected_id": selected_id,
+        "query": request.GET.get("q", "")
+    })
     
 
 def reclutador_view(request):
-    return render(request, 'pages/reclutador.html')
+    vacantes = Vacante.objects.all().order_by('-fecha_creacion')
+    return render(request, 'pages/reclutador.html', {'vacantes': vacantes})
 
 def crear_vacante_view(request):
     return render(request, 'pages/crear_vacante.html')
@@ -38,6 +46,11 @@ def crear_vacante(request):
 def panel_reclutador(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
     return render(request, "panel_reclutador.html", {"vacantes": vacantes})
+
+def detalle_vacante_reclutador(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    return render(request, 'pages/detalle_vacante_reclutador.html', {'vacante': vacante})
+
 
 
 
