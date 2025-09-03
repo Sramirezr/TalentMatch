@@ -10,30 +10,25 @@
 <div class="container">
     <h2 class="mb-4">Crear Vacante</h2>
 
-    <form method="POST" action="{% url 'crear_vacante' %}">
+    <form method="POST" action="{% url 'guardar_vacante' %}">
         {% csrf_token %}
 
-        
         <div class="mb-3">
             <label for="titulo" class="form-label">Título</label>
             <input type="text" class="form-control" id="titulo" name="titulo" required>
         </div>
         <div class="mb-3">
-    <label for="nombre_interno" class="form-label">Nombre interno (solo para el reclutador)</label>
-    <input type="text" class="form-control" id="nombre_interno" name="nombre_interno">
-    <div class="form-text">Este nombre no será visible para los postulantes.</div>
-            </div>
+            <label for="nombre_interno" class="form-label">Nombre interno (solo para el reclutador)</label>
+            <input type="text" class="form-control" id="nombre_interno" name="nombre_interno">
+            <div class="form-text">Este nombre no será visible para los postulantes.</div>
+        </div>
 
         <div class="row">
-            
             <div class="col-md-6">
-                
                 <div class="mb-3">
                     <label for="ubicacion" class="form-label">Ubicación</label>
                     <input type="text" class="form-control" id="ubicacion" name="ubicacion" required>
                 </div>
-
-                
                 <div class="mb-3">
                     <label class="form-label">Rango salarial</label>
                     <div class="input-group">
@@ -44,23 +39,16 @@
                     </div>
                     <div class="form-text">Opcional. Deja en blanco si no deseas mostrar el rango.</div>
                 </div>
-
-                
                 <div class="mb-3">
                     <label for="fecha_publicacion" class="form-label">Fecha de publicación</label>
                     <input type="date" class="form-control" id="fecha_publicacion" name="fecha_publicacion" required>
                 </div>
-
-                
                 <div class="mb-3">
                     <label for="descripcion" class="form-label">Descripción</label>
                     <textarea class="form-control" id="descripcion" name="descripcion" rows="5" required></textarea>
                 </div>
             </div>
-
-            
             <div class="col-md-6">
-                
                 <div class="mb-3">
                     <label for="palabras_clave" class="form-label">Palabras clave (opcional)</label>
                     <textarea class="form-control" id="palabras_clave" name="palabras_clave" rows="5" placeholder="Ej: Python, liderazgo, comunicación..."></textarea>
@@ -69,7 +57,6 @@
             </div>
         </div>
 
-        
         <div class="mt-4 d-flex justify-content-between">
             <a href="{% url 'reclutador' %}" class="btn btn-secondary">Volver</a>
             <button type="submit" class="btn btn-primary">Crear Vacante</button>

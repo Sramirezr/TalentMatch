@@ -33,10 +33,13 @@
         <!-- Lista de vacantes -->
         <div class="col-md-4">
             <div class="list-group vacantes-lista">
-                <a href="#" class="list-group-item list-group-item-action active">
-                    Analista de datos
-                </a>
-                
+                {% for vacante in vacantes %}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        {{ vacante.titulo }}
+                    </a>
+                {% empty %}
+                    <p class="text-muted">No hay vacantes disponibles.</p>
+                {% endfor %}
             </div>
         </div>
 

@@ -6,7 +6,9 @@ def home_view(request):
     return render(request, 'pages/home.html')
 
 def postulante_view(request):
-    return render(request, 'pages/postulante.html')
+    vacantes = Vacante.objects.all().order_by('-fecha_creacion')
+    return render(request, 'pages/postulante.html', {"vacantes": vacantes})
+    
 
 def reclutador_view(request):
     return render(request, 'pages/reclutador.html')
