@@ -7,30 +7,31 @@
 </head>
 <body class="bg-light p-4">
 
-    <div class="container">
-        <!-- Encabezado -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="card p-3">
-                    <h4>Información del Reclutador</h4>
-                    <p><strong>Nombre:</strong> Samuel Molina</p>
-                    <p><strong>Email:</strong> Correo</p>
-                </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-start justify-content-end">
-                <a href="{% url 'crear_vacante' %}" class="btn btn-primary btn-lg">+ Nueva Vacante</a>
+<div class="container">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card p-3">
+                <h4>Información del Reclutador</h4>
+                <p><strong>Nombre:</strong> Samuel Molina</p>
+                <p><strong>Email:</strong> Correo</p>
             </div>
         </div>
+        <div class="col-md-4 d-flex align-items-start justify-content-end">
+            <a href="{% url 'crear_vacante' %}" class="btn btn-primary btn-lg">+ Nueva Vacante</a>
+        </div>
+    </div>
 
-        <!-- Historial de Vacantes, SOLO este cuadro tiene scroll -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Historial de Vacantes</h5>
-            </div>
-            <!-- SOLO este div tiene scroll -->
-            <div style="max-height: 400px; overflow-y: auto; min-height: 200px;">
+    <!-- SOLO el historial tiene scroll -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Vacantes</h5>
+        </div>
+        <div class="card-body p-0">
+            <!-- Scroll solo aquí -->
+            <div style="max-height: 400px; min-height: 200px; overflow-y: auto;">
                 {% for vacante in vacantes %}
-                    <div class="card mb-2">
+                    <div class="card m-2">
                         <div class="card-body">
                             <h5 class="card-title">
                                 <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="text-decoration-none">{{ vacante.titulo }}</a>
@@ -45,9 +46,10 @@
                 {% endfor %}
             </div>
         </div>
-
-        <!-- Botón volver -->
-        <a href="{% url 'home' %}" class="btn btn-secondary mt-4">Volver al inicio</a>
     </div>
+
+    <!-- Botón volver -->
+    <a href="{% url 'home' %}" class="btn btn-secondary mt-4">Volver al inicio</a>
+</div>
 </body>
 </html>
