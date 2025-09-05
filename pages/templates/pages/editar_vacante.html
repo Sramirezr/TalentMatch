@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Vacante</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título público</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" value="{{ vacante.titulo }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="nombre_interno" class="form-label">Nombre interno</label>
+            <input type="text" class="form-control" id="nombre_interno" name="nombre_interno" value="{{ vacante.nombre_interno }}">
+        </div>
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" required>{{ vacante.descripcion }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="palabras_clave" class="form-label">Palabras clave (solo reclutador)</label>
+            <input type="text" class="form-control" id="palabras_clave" name="palabras_clave" value="{{ vacante.palabras_clave }}">
+        </div>
+        <div class="mb-3">
+            <label for="rango_salarial" class="form-label">Rango salarial</label>
+            <input type="text" class="form-control" id="rango_salarial" name="rango_salarial" value="{{ vacante.rango_salarial }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a href="{% url 'reclutador' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
