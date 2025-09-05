@@ -62,3 +62,15 @@ def eliminar_vacante(request, vacante_id):
     except Vacante.DoesNotExist:
         messages.warning(request, "La vacante no existe o ya fue eliminada.")
     return redirect('reclutador')
+
+def editar_vacante(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    if request.method == "POST":
+        vacante.titulo = request.POST.get("titulo")
+        vacante.nombre_interno = request.POST.get("nombre_interno")
+        vacante.descripcion = request.POST.get("descripcion")
+        vacante.palabras_clave = request.POST.get("palabras_clave")
+        vacante.rango_salarial = request.POST.get("rango_salarial")
+        vacante.save()
+        return redirect("reclutador")
+    return render(request, "pages/editar_vacante.html", {"vacante": vacante})
