@@ -8,7 +8,7 @@
 <body class="bg-light p-4">
 
 <div class="container">
-    <!-- Encabezado de información del reclutador -->
+    <!-- Encabezado -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="card p-3">
@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <!-- Historial de Vacantes (con scroll) -->
+    <!-- Historial de Vacantes -->
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Historial de Vacantes</h5>
@@ -30,22 +30,19 @@
         <div class="card-body p-0">
             <div style="max-height: 400px; min-height: 200px; overflow-y: auto;">
                 {% for vacante in vacantes %}
-                    <div class="card m-2">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="text-decoration-none">{{ vacante.titulo_reclutador }}</a>
-                            </h5>
-                            <p class="card-text">{{ vacante.descripcion }}</p>
-                            <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="btn btn-outline-primary btn-sm">Ver detalles</a>
-                            <a href="#" class="btn btn-outline-warning btn-sm disabled">Editar</a>
-                            <!-- Botón eliminar -->
-                            <a href="{% url 'eliminar_vacante' vacante.id %}" class="btn btn-outline-danger btn-sm"
-                               onclick="return confirm('¿Estás seguro de que quieres eliminar esta vacante?');">Eliminar</a>
-                        </div>
-                    </div>
-                {% empty %}
-                    <p class="text-muted p-3">Aún no hay vacantes creadas.</p>
-                {% endfor %}
+    <div class="card m-2">
+        <div class="card-body">
+            <!-- SOLO EL NOMBRE INTERNO para el reclutador -->
+            <h5 class="card-title">{{ vacante.nombre_interno|default:"(Sin nombre interno)" }}</h5>
+            <a href="{% url 'detalle_vacante_reclutador' vacante.id %}" class="btn btn-outline-primary btn-sm">Ver detalles</a>
+            <a href="#" class="btn btn-outline-warning btn-sm disabled">Editar</a>
+            <a href="{% url 'eliminar_vacante' vacante.id %}" class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('¿Estás seguro de que quieres eliminar esta vacante?');">Eliminar</a>
+        </div>
+    </div>
+{% empty %}
+    <p class="text-muted p-3">Aún no hay vacantes creadas.</p>
+{% endfor %}
             </div>
         </div>
     </div>

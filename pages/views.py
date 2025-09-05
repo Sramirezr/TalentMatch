@@ -25,22 +25,24 @@ def reclutador_view(request):
 def crear_vacante_view(request):
     return render(request, 'pages/crear_vacante.html')
 
+
 def crear_vacante(request):
-   
     if request.method == "POST":
         titulo = request.POST.get("titulo")
+        nombre_interno = request.POST.get("nombre_interno", "")  # <-- nuevo
         descripcion = request.POST.get("descripcion")
         palabras_clave = request.POST.get("palabras_clave", "")
         rango_salarial = request.POST.get("rango_salarial", "")
 
         Vacante.objects.create(
             titulo=titulo,
+            nombre_interno=nombre_interno,
             descripcion=descripcion,
             palabras_clave=palabras_clave,
             rango_salarial=rango_salarial
         )
 
-        return redirect("reclutador")  # Vuelve al panel del reclutador
+        return redirect("reclutador")
 
     return render(request, "crear_vacante.html")
 
