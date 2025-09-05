@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Vacante
+from django.contrib import messages
 
 # Create your views here.
 def home_view(request):
@@ -51,6 +52,11 @@ def detalle_vacante_reclutador(request, vacante_id):
     vacante = get_object_or_404(Vacante, id=vacante_id)
     return render(request, 'pages/detalle_vacante_reclutador.html', {'vacante': vacante})
 
-
-
-
+def eliminar_vacante(request, vacante_id):
+    try:
+        vacante = Vacante.objects.get(id=vacante_id)
+        vacante.delete()
+        messages.success(request, "Vacante eliminada correctamente.")
+    except Vacante.DoesNotExist:
+        messages.warning(request, "La vacante no existe o ya fue eliminada.")
+    return redirect('reclutador')
