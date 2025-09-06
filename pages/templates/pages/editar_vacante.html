@@ -1,31 +1,49 @@
-{% extends "base.html" %}
+{% extends "pages/base.html" %}
+{% block title %}Editar Vacante{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Editar Vacante</h2>
+<div class="container">
+    <h2 class="mb-4">Editar Vacante</h2>
     <form method="POST">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="titulo" class="form-label">Título público</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" value="{{ vacante.titulo }}" required>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="titulo" class="form-label">Título</label>
+                    <input type="text" class="form-control" id="titulo" name="titulo" value="{{ vacante.titulo }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="nombre_interno" class="form-label">Nombre interno (solo para el reclutador)</label>
+                    <input type="text" class="form-control" id="nombre_interno" name="nombre_interno" value="{{ vacante.nombre_interno }}">
+                </div>
+                <div class="mb-3">
+                    <label for="ubicacion" class="form-label">Ubicación</label>
+                    <input type="text" class="form-control" id="ubicacion" name="ubicacion" value="{{ vacante.ubicacion }}">
+                </div>
+                <div class="mb-3">
+                    <label for="fecha_publicacion" class="form-label">Fecha de publicación</label>
+                    <input type="date" class="form-control" id="fecha_publicacion" name="fecha_publicacion" value="{{ vacante.fecha_publicacion|date:'Y-m-d' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="5" required>{{ vacante.descripcion }}</textarea>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="palabras_clave" class="form-label">Palabras clave para la IA</label>
+                    <textarea class="form-control" id="palabras_clave" name="palabras_clave" rows="5" placeholder="Ej: Python, liderazgo, comunicación...">{{ vacante.palabras_clave }}</textarea>
+                    <div class="form-text">Si lo dejas en blanco, se usarán palabras clave predeterminadas.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="rango_salarial" class="form-label">Rango salarial</label>
+                    <input type="text" class="form-control" id="rango_salarial" name="rango_salarial" value="{{ vacante.rango_salarial }}">
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="nombre_interno" class="form-label">Nombre interno</label>
-            <input type="text" class="form-control" id="nombre_interno" name="nombre_interno" value="{{ vacante.nombre_interno }}">
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{% url 'reclutador' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
         </div>
-        <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" required>{{ vacante.descripcion }}</textarea>
-        </div>
-        <div class="mb-3">
-            <label for="palabras_clave" class="form-label">Palabras clave (solo reclutador)</label>
-            <input type="text" class="form-control" id="palabras_clave" name="palabras_clave" value="{{ vacante.palabras_clave }}">
-        </div>
-        <div class="mb-3">
-            <label for="rango_salarial" class="form-label">Rango salarial</label>
-            <input type="text" class="form-control" id="rango_salarial" name="rango_salarial" value="{{ vacante.rango_salarial }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-        <a href="{% url 'reclutador' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}
