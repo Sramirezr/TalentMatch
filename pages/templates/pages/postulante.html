@@ -22,13 +22,20 @@
 <body class="bg-light p-4">
 
     <a href="{% url 'home' %}" class="btn btn-secondary mb-3">Volver</a>
-    <!-- Si no tienes la url, puedes usar: <a href="/home/" class="btn btn-secondary mb-3">Volver</a> -->
 
     <h1 class="mb-4">Buscar Vacantes</h1>
 
-    <!-- Buscador -->
-    <form method="GET" class="mb-4">
-        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por título">
+    <!-- Buscador: puede buscar por uno o ambos campos, no son obligatorios -->
+    <form method="GET" class="mb-4 row g-2">
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por título">
+        </div>
+        <div class="col-md-6">
+            <input type="text" name="rango_salarial" value="{{ rango_salarial }}" class="form-control" placeholder="Buscar por salario">
+        </div>
+        <div class="col-12 mt-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
     </form>
 
     <div class="row">
@@ -36,7 +43,7 @@
         <div class="col-md-4">
             <div class="list-group vacantes-lista">
                 {% for vacante in vacantes %}
-                    <a href="?vacante_id={{ vacante.id }}{% if query %}&q={{ query }}{% endif %}"
+                    <a href="?vacante_id={{ vacante.id }}{% if query %}&q={{ query }}{% endif %}{% if rango_salarial %}&rango_salarial={{ rango_salarial }}{% endif %}"
                        class="list-group-item list-group-item-action {% if vacante.id|stringformat:"s" == selected_id %}active{% endif %}">
                         {{ vacante.titulo }}
                     </a>
@@ -50,7 +57,6 @@
             <div class="vacante-detalle">
                 {% if vacante_seleccionada %}
                     <h3>{{ vacante_seleccionada.titulo }}</h3>
-                    <p><strong>Ubicación:</strong> {{ vacante_seleccionada.ubicacion }}</p>
                     <p><strong>Descripción:</strong> {{ vacante_seleccionada.descripcion }}</p>
                     <p><strong>Rango salarial:</strong> {{ vacante_seleccionada.rango_salarial }}</p>
                     <p><strong>Fecha de publicación:</strong> {{ vacante_seleccionada.fecha_creacion|date:"d/m/Y H:i" }}</p>
@@ -60,6 +66,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>
