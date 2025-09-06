@@ -1,18 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Vacante
 from django.contrib import messages
+from django.db.models.functions import Lower  
 
 # Create your views here.
 def home_view(request):
     return render(request, 'pages/home.html')
 
 def postulante_view(request):
-    query = request.GET.get("q", "")
-    rango_salarial = request.GET.get("rango_salarial", "")
+    query = request.GET.get("q", "").strip()
+    rango_salarial = request.GET.get("rango_salarial", "").strip()
 
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
     if query:
-        vacantes = vacantes.filter(titulo__icontains=query)
+        vacantes = vacantes.annotate(titulo_lower=Lower('titulo')).filter(titulo_lower__icontains=query.lower())
     if rango_salarial:
         vacantes = vacantes.filter(rango_salarial__icontains=rango_salarial)
 
@@ -25,7 +26,6 @@ def postulante_view(request):
         "query": query,
         "rango_salarial": rango_salarial,
     })
-    
 
 def reclutador_view(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
