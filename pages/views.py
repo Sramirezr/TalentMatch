@@ -7,14 +7,23 @@ def home_view(request):
     return render(request, 'pages/home.html')
 
 def postulante_view(request):
+    query = request.GET.get("q", "")
+    rango_salarial = request.GET.get("rango_salarial", "")
+
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
+    if query:
+        vacantes = vacantes.filter(titulo__icontains=query)
+    if rango_salarial:
+        vacantes = vacantes.filter(rango_salarial__icontains=rango_salarial)
+
     selected_id = request.GET.get('vacante_id')
     vacante_seleccionada = Vacante.objects.filter(pk=selected_id).first() if selected_id else None
     return render(request, 'pages/postulante.html', {
         "vacantes": vacantes,
         "vacante_seleccionada": vacante_seleccionada,
         "selected_id": selected_id,
-        "query": request.GET.get("q", "")
+        "query": query,
+        "rango_salarial": rango_salarial,
     })
     
 
@@ -74,3 +83,4 @@ def editar_vacante(request, vacante_id):
         vacante.save()
         return redirect("reclutador")
     return render(request, "pages/editar_vacante.html", {"vacante": vacante})
+
