@@ -1,0 +1,49 @@
+{% extends "pages/base.html" %}
+{% block title %}Detalle de Vacante{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <a href="{% url 'reclutador' %}" class="btn btn-secondary mb-3">Volver</a>
+    <h2 class="mb-3">{{ vacante.titulo }}</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Nombre interno:</strong> {{ vacante.nombre_interno|default:"(Sin nombre interno)" }}</p>
+            <p><strong>Descripción:</strong> {{ vacante.descripcion }}</p>
+            <p><strong>Palabras clave:</strong> {{ vacante.palabras_clave }}</p>
+            <p><strong>Rango salarial:</strong> {{ vacante.rango_salarial }}</p>
+            <p><strong>Fecha de publicación:</strong> {{ vacante.fecha_creacion|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Mejores candidatos según IA</h5>
+        </div>
+        <div class="card-body">
+            {% if mejores_candidatos %}
+                <ul class="list-group">
+                {% for candidato in mejores_candidatos %}
+                    <li class="list-group-item">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <strong>{{ candidato.nombre }}</strong> <br>
+                                <span class="text-muted">{{ candidato.email }}</span>
+                                <br>
+                                <a href="{{ candidato.cv_url }}" target="_blank">Ver CV</a>
+                            </div>
+                            <div>
+                                <span class="badge bg-success fs-6">{{ candidato.score }}%</span>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Razón IA:</strong>
+                            <span>{{ candidato.ia_razon }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted"></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
