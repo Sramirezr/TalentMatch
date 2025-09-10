@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Vacante
 from django.contrib import messages
 from django.db.models.functions import Lower  
+from .forms import PostulacionForm
 
 # Create your views here.
 def home_view(request):
@@ -83,4 +84,20 @@ def editar_vacante(request, vacante_id):
         vacante.save()
         return redirect("reclutador")
     return render(request, "pages/editar_vacante.html", {"vacante": vacante})
+
+
+def postularse_view(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    if request.method == "POST":
+        form = PostulacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            postulacion = form.save(commit=False)
+            postulacion.postulante = request.user  # Ajusta según tu modelo de usuario
+            postulacion.vacante = vacante
+            postulacion.save()
+            messages.success(request, "¡Has postulado exitosamente!")
+            return redirect('postulante')
+    else:
+        form = PostulacionForm()
+    return render(request, 'pages/postularse.html', {'form': form, 'vacante': vacante})
 
