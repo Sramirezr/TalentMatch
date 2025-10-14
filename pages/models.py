@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
+
 
 class Vacante(models.Model):
     titulo = models.CharField(max_length=200)
@@ -19,3 +21,15 @@ class Postulacion(models.Model):
     vacante = models.ForeignKey('Vacante', on_delete=models.CASCADE)
     cv_pdf = models.FileField(upload_to='cvs/', null=True, blank=True)
     fecha_postulacion = models.DateTimeField(auto_now_add=True)
+
+
+class Profile(models.Model):
+    USER_TYPE_CHOICES = (
+        ("postulante", "Postulante"),
+        ("reclutador", "Reclutador"),
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.user_type})"
