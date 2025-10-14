@@ -3,6 +3,10 @@ from .models import Vacante
 from django.contrib import messages
 from django.db.models.functions import Lower  
 from .forms import PostulacionForm
+from django.contrib.auth import authenticate, login, logout
+from .models import Profile
+from django.contrib.auth.forms import AuthenticationForm
+from .forms import UserRegisterForm
 
 # Create your views here.
 def home_view(request):
@@ -101,3 +105,40 @@ def postularse_view(request, vacante_id):
         form = PostulacionForm()
     return render(request, 'pages/postularse.html', {'form': form, 'vacante': vacante})
 
+def register_view(request):
+    if request.method == "POST":
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+            # SIEMPRE crea el perfil como postulante
+            Profile.objects.create(user=user, user_type="postulante")
+            messages.success(request, "¡Registro exitoso! Ya puedes iniciar sesión.")
+            return redirect("login")
+    else:
+        form = UserRegisterForm()
+    # Usar el mismo template, pero en modo registro
+    return render(request, "pages/login_register.html", {"form": form, "register_mode": True})
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Redirige según el tipo de usuario
+            if hasattr(user, "profile") and user.profile.user_type == "reclutador":
+                return redirect("reclutador")
+            else:
+                return redirect("postulante")
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos.")
+    # Usar el mismo template, pero en modo login
+    form = UserRegisterForm()
+    return render(request, "pages/login_register.html", {"form": form, "register_mode": False})
+
+def logout_view(request):
+    logout(request)
+    return redirect("login")

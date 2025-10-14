@@ -10,6 +10,9 @@ urlpatterns = [
       path('vacante/reclutador/<int:vacante_id>/', views.detalle_vacante_reclutador, name='detalle_vacante_reclutador'),
       path('vacante/eliminar/<int:vacante_id>/', views.eliminar_vacante, name='eliminar_vacante'),
       path('vacante/<int:vacante_id>/editar/', views.editar_vacante, name='editar_vacante'),
+      path("login/", views.login_view, name="login"),
+      path("logout/", views.logout_view, name="logout"),
+      path("register/", views.register_view, name="register"),
      
 ]
 
