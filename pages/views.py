@@ -7,31 +7,52 @@ from django.contrib.auth import authenticate, login, logout
 from .models import Profile
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UserRegisterForm
-from .models import Profile
+from .models import Profile, Postulacion
+from .utils import extraer_texto_pdf, analizar_cv_con_gemini
 
 # Create your views here.
 def home_view(request):
     return render(request, 'pages/home.html')
 
-def postulante_view(request):
-    query = request.GET.get("q", "").strip()
-    rango_salarial = request.GET.get("rango_salarial", "").strip()
-
-    vacantes = Vacante.objects.all().order_by('-fecha_creacion')
-    if query:
-        vacantes = vacantes.annotate(titulo_lower=Lower('titulo')).filter(titulo_lower__icontains=query.lower())
-    if rango_salarial:
-        vacantes = vacantes.filter(rango_salarial__icontains=rango_salarial)
-
-    selected_id = request.GET.get('vacante_id')
-    vacante_seleccionada = Vacante.objects.filter(pk=selected_id).first() if selected_id else None
-    return render(request, 'pages/postulante.html', {
-        "vacantes": vacantes,
-        "vacante_seleccionada": vacante_seleccionada,
-        "selected_id": selected_id,
-        "query": query,
-        "rango_salarial": rango_salarial,
-    })
+def postularse_view(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    
+    if request.method == "POST":
+        form = PostulacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            postulacion = form.save(commit=False)
+            postulacion.postulante = request.user
+            postulacion.vacante = vacante
+            
+            # ⭐ ANALIZAR CON IA AUTOMÁTICAMENTE
+            if postulacion.cv_pdf:
+                print(f"🤖 Analizando CV con IA para vacante: {vacante.titulo}")
+                
+                # Extraer texto del PDF
+                texto_cv = extraer_texto_pdf(postulacion.cv_pdf.file)
+                
+                if texto_cv:
+                    # Analizar con Gemini
+                    palabras_clave = vacante.palabras_clave or ""
+                    score, razon = analizar_cv_con_gemini(texto_cv, palabras_clave)
+                    
+                    # Guardar resultados
+                    postulacion.score_ia = score
+                    postulacion.razon_ia = razon
+                    
+                    print(f"✓ Score IA: {score}/100")
+                else:
+                    print("⚠️ No se pudo extraer texto del PDF")
+                    postulacion.score_ia = 0
+                    postulacion.razon_ia = "No se pudo extraer texto del CV"
+            
+            postulacion.save()
+            messages.success(request, "¡Has postulado exitosamente! Tu CV ha sido analizado por IA.")
+            return redirect('postulante')
+    else:
+        form = PostulacionForm()
+    
+    return render(request, 'pages/postularse.html', {'form': form, 'vacante': vacante})
 
 def reclutador_view(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
@@ -161,3 +182,25 @@ def login_reclutador_view(request):
     else:
         form = AuthenticationForm()
     return render(request, "pages/login_reclutador.html", {"form": form})
+
+def detalle_vacante_reclutador(request, vacante_id):
+    vacante = get_object_or_404(Vacante, id=vacante_id)
+    
+    # ⭐ OBTENER POSTULACIONES ORDENADAS POR SCORE IA
+    postulaciones = Postulacion.objects.filter(vacante=vacante).order_by('-score_ia')
+    
+    mejores_candidatos = []
+    for post in postulaciones:
+        if post.score_ia is not None:
+            mejores_candidatos.append({
+                'nombre': post.postulante.username,
+                'email': post.postulante.email,
+                'score': post.score_ia,
+                'ia_razon': post.razon_ia,
+                'cv_url': post.cv_pdf.url if post.cv_pdf else '#'
+            })
+    
+    return render(request, 'pages/detalle_vacante_reclutador.html', {
+        'vacante': vacante,
+        'mejores_candidatos': mejores_candidatos
+    })
