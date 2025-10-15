@@ -7,12 +7,17 @@ from django.contrib.auth import authenticate, login, logout
 from .models import Profile
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UserRegisterForm
-from .models import Profile, Postulacion
+from .models import Profile, Postulacion, Notificacion, Vacante
 from .utils import extraer_texto_pdf, analizar_cv_con_gemini
+from django.contrib import messages
 
 # Create your views here.
 def home_view(request):
     return render(request, 'pages/home.html')
+
+# pages/views.py - REEMPLAZA la función postulante_view (líneas 17-87)
+
+# pages/views.py - ACTUALIZAR postulante_view para incluir notificaciones
 
 def postulante_view(request):
     """
@@ -28,6 +33,11 @@ def postulante_view(request):
         cv_pdf = request.FILES.get('cv_pdf')
         
         if cv_pdf and request.user.is_authenticated:
+            # VERIFICAR SI YA SE POSTULÓ
+            if Postulacion.objects.filter(postulante=request.user, vacante=vacante).exists():
+                messages.warning(request, "⚠️ Ya te has postulado a esta vacante anteriormente.")
+                return redirect(f'/postulante/?vacante_id={selected_id}')
+            
             # Crear la postulación
             postulacion = Postulacion(
                 postulante=request.user,
@@ -78,14 +88,22 @@ def postulante_view(request):
 
     vacante_seleccionada = Vacante.objects.filter(pk=selected_id).first() if selected_id else None
     
+    # 🆕 Obtener notificaciones (últimas 5 para el dropdown)
+    notificaciones = []
+    notificaciones_no_leidas = 0
+    if request.user.is_authenticated:
+        notificaciones = Notificacion.objects.filter(usuario=request.user)[:5]
+        notificaciones_no_leidas = Notificacion.objects.filter(usuario=request.user, leida=False).count()
+    
     return render(request, 'pages/postulante.html', {
         "vacantes": vacantes,
         "vacante_seleccionada": vacante_seleccionada,
         "selected_id": selected_id,
         "query": query,
         "rango_salarial": rango_salarial,
+        "notificaciones": notificaciones,
+        "notificaciones_no_leidas": notificaciones_no_leidas,
     })
-
 
 def reclutador_view(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
@@ -214,3 +232,109 @@ def detalle_vacante_reclutador(request, vacante_id):
         'recientes': recientes,
         'todos': todos,
     })
+
+# pages/views.py - Agrega esta función DESPUÉS de detalle_vacante_reclutador
+
+def cambiar_estado_postulacion(request, postulacion_id):
+    """Cambiar el estado de una postulación (AJAX o POST)"""
+    postulacion = get_object_or_404(Postulacion, id=postulacion_id)
+    
+    if request.method == "POST":
+        nuevo_estado = request.POST.get('estado')
+        notas = request.POST.get('notas_reclutador', '')
+        
+        # Validar que el estado sea válido
+        estados_validos = [choice[0] for choice in Postulacion.ESTADO_CHOICES]
+        if nuevo_estado in estados_validos:
+            postulacion.estado = nuevo_estado
+            postulacion.notas_reclutador = notas
+            postulacion.save()
+            messages.success(request, f'✅ Estado actualizado a: {postulacion.get_estado_display()}')
+        else:
+            messages.error(request, '❌ Estado inválido')
+        
+        # Redirigir de vuelta al detalle de la vacante
+        return redirect('detalle_vacante_reclutador', vacante_id=postulacion.vacante.id)
+    
+    return redirect('reclutador')
+
+
+
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def perfil_postulante(request):
+    """Vista del perfil del postulante"""
+    postulaciones = Postulacion.objects.filter(postulante=request.user).order_by('-fecha_postulacion')
+    
+    return render(request, 'pages/perfil_postulante.html', {
+        'postulaciones': postulaciones
+    })
+
+
+
+@login_required
+def marcar_notificacion_leida(request, notificacion_id):
+    """Marcar una notificación como leída"""
+    notificacion = get_object_or_404(Notificacion, id=notificacion_id, usuario=request.user)
+    notificacion.leida = True
+    notificacion.save()
+    return redirect('postulante')
+
+@login_required
+def marcar_todas_leidas(request):
+    """Marcar todas las notificaciones como leídas"""
+    Notificacion.objects.filter(usuario=request.user, leida=False).update(leida=True)
+    messages.success(request, '✅ Todas las notificaciones marcadas como leídas')
+    return redirect('postulante')
+
+@login_required
+def cambiar_estado_postulacion(request, postulacion_id):
+    """Cambiar el estado de una postulación y crear notificación"""
+    postulacion = get_object_or_404(Postulacion, id=postulacion_id)
+    
+    if request.method == "POST":
+        nuevo_estado = request.POST.get('estado')
+        notas = request.POST.get('notas_reclutador', '')
+        
+        # Validar que el estado sea válido
+        estados_validos = [choice[0] for choice in Postulacion.ESTADO_CHOICES]
+        if nuevo_estado in estados_validos:
+            # Guardar estado anterior
+            estado_anterior = postulacion.estado
+            
+            # Actualizar estado
+            postulacion.estado = nuevo_estado
+            postulacion.notas_reclutador = notas
+            postulacion.save()
+            
+            # 🔔 CREAR NOTIFICACIÓN para el postulante
+            if estado_anterior != nuevo_estado:
+                # Mensajes según el estado
+                mensajes_estado = {
+                    'PENDIENTE': f'Tu postulación para "{postulacion.vacante.titulo}" está en revisión.',
+                    'REVISADO': f'Tu postulación para "{postulacion.vacante.titulo}" ha sido revisada por el equipo de RRHH.',
+                    'ACEPTADO': f'¡Felicidades! Tu postulación para "{postulacion.vacante.titulo}" ha sido ACEPTADA. Pronto te contactaremos.',
+                    'RECHAZADO': f'Tu postulación para "{postulacion.vacante.titulo}" no ha sido seleccionada en esta ocasión.',
+                }
+                
+                # Crear la notificación
+                Notificacion.objects.create(
+                    usuario=postulacion.postulante,
+                    tipo='CAMBIO_ESTADO',
+                    titulo=f'Cambio de estado: {postulacion.get_estado_display()}',
+                    mensaje=mensajes_estado.get(nuevo_estado, 'El estado de tu postulación ha cambiado.'),
+                    postulacion=postulacion
+                )
+                
+                print(f"✅ Notificación creada para {postulacion.postulante.username}")
+            
+            messages.success(request, f'✅ Estado actualizado a: {postulacion.get_estado_display()}')
+        else:
+            messages.error(request, '❌ Estado inválido')
+        
+        # Redirigir de vuelta al detalle de la vacante
+        return redirect('detalle_vacante_reclutador', vacante_id=postulacion.vacante.id)
+    
+    return redirect('reclutador')

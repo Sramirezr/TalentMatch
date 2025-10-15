@@ -4,6 +4,8 @@
 <div class="container py-4">
     <a href="{% url 'reclutador' %}" class="btn btn-secondary mb-3">Volver</a>
     <h2 class="mb-3">{{ vacante.titulo }}</h2>
+    
+    <!-- Información de la Vacante -->
     <div class="card mb-4">
         <div class="card-body">
             <p><strong>Nombre interno:</strong> {{ vacante.nombre_interno|default:"(Sin nombre interno)" }}</p>
@@ -14,6 +16,7 @@
         </div>
     </div>
 
+    <!-- Top 5 Candidatos según IA -->
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Top 5 candidatos según IA</h5>
@@ -28,8 +31,18 @@
                         <br>
                         <span class="text-muted">Postulado: {{ post.fecha_postulacion|date:"d/m/Y H:i" }}</span>
                         <br>
-                        <strong>IA dice:</strong> {{ post.resumen_ia|default:"-" }}
+                        <strong>IA dice:</strong> {{ post.razon_ia|default:"-" }}
                         <br>
+                        <!-- Estado del candidato -->
+                        {% if post.estado == 'PENDIENTE' %}
+                            <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% elif post.estado == 'REVISADO' %}
+                            <span class="badge bg-info">Revisado</span>
+                        {% elif post.estado == 'ACEPTADO' %}
+                            <span class="badge bg-success">Aceptado</span>
+                        {% elif post.estado == 'RECHAZADO' %}
+                            <span class="badge bg-danger">Rechazado</span>
+                        {% endif %}
                         <a href="{{ post.cv_pdf.url }}" target="_blank">Ver CV</a>
                     </li>
                 {% endfor %}
@@ -40,6 +53,7 @@
         </div>
     </div>
 
+    <!-- Postulaciones Recientes -->
     <div class="card mb-4">
         <div class="card-header bg-info text-white">
             <h5 class="mb-0">Postulaciones recientes</h5>
@@ -52,6 +66,16 @@
                         <strong>{{ post.postulante.username }}</strong>
                         <span class="text-muted">- {{ post.fecha_postulacion|date:"d/m/Y H:i" }}</span>
                         <span class="ms-2">Score IA: <b>{{ post.score_ia|default:"-" }}</b></span>
+                        <!-- Estado -->
+                        {% if post.estado == 'PENDIENTE' %}
+                            <span class="badge bg-warning text-dark ms-2">Pendiente</span>
+                        {% elif post.estado == 'REVISADO' %}
+                            <span class="badge bg-info ms-2">Revisado</span>
+                        {% elif post.estado == 'ACEPTADO' %}
+                            <span class="badge bg-success ms-2">Aceptado</span>
+                        {% elif post.estado == 'RECHAZADO' %}
+                            <span class="badge bg-danger ms-2">Rechazado</span>
+                        {% endif %}
                         <a href="{{ post.cv_pdf.url }}" class="ms-2" target="_blank">Ver CV</a>
                     </li>
                 {% endfor %}
@@ -62,6 +86,7 @@
         </div>
     </div>
 
+    <!-- Todos los Candidatos con Gestión de Estados -->
     <div class="card">
         <div class="card-header bg-secondary text-white">
             <h5 class="mb-0">Todos los candidatos</h5>
@@ -73,8 +98,9 @@
                         <tr>
                             <th>Candidato</th>
                             <th>Score IA</th>
-                            <th>Resumen IA</th>
+                            <th>Razón IA</th>
                             <th>Fecha postulación</th>
+                            <th>Estado</th>
                             <th>CV</th>
                         </tr>
                     </thead>
@@ -83,8 +109,22 @@
                         <tr>
                             <td>{{ post.postulante.username }}</td>
                             <td>{{ post.score_ia|default:"-" }}</td>
-                            <td>{{ post.resumen_ia|default:"-" }}</td>
+                            <td>{{ post.razon_ia|default:"-" }}</td>
                             <td>{{ post.fecha_postulacion|date:"d/m/Y H:i" }}</td>
+                            
+                            <!-- COLUMNA DE ESTADO CON SELECTOR -->
+                            <td>
+                                <form method="POST" action="{% url 'cambiar_estado_postulacion' post.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="PENDIENTE" {% if post.estado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+                                        <option value="REVISADO" {% if post.estado == 'REVISADO' %}selected{% endif %}>Revisado</option>
+                                        <option value="ACEPTADO" {% if post.estado == 'ACEPTADO' %}selected{% endif %}>Aceptado</option>
+                                        <option value="RECHAZADO" {% if post.estado == 'RECHAZADO' %}selected{% endif %}>Rechazado</option>
+                                    </select>
+                                </form>
+                            </td>
+                            
                             <td><a href="{{ post.cv_pdf.url }}" target="_blank">Ver CV</a></td>
                         </tr>
                         {% endfor %}
