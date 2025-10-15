@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from .models import Profile
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import UserRegisterForm
+from .models import Profile
 
 # Create your views here.
 def home_view(request):
@@ -142,3 +143,21 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("login")
+
+def login_reclutador_view(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            try:
+                profile = Profile.objects.get(user=user)
+                if profile.user_type == "reclutador":
+                    login(request, user)
+                    return redirect("reclutador")
+                else:
+                    form.add_error(None, "Este usuario no es reclutador.")
+            except Profile.DoesNotExist:
+                form.add_error(None, "No se encontró el perfil de este usuario.")
+    else:
+        form = AuthenticationForm()
+    return render(request, "pages/login_reclutador.html", {"form": form})
