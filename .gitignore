@@ -1,0 +1,46 @@
+# Archivos de prueba de IA
+pages/test_gemini.py
+pages/test_pdf.py
+pages/check_models.py
+
+# Archivos con API keys sensibles
+pages/utils.py
+
+# Base de datos SQLite
+*.sqlite3
+db.sqlite3
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de media y CVs subidos
+media/
+cvs/
+
+# Variables de entorno
+.env
+.env.local
+
+# Logs
+*.log

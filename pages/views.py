@@ -14,22 +14,33 @@ from .utils import extraer_texto_pdf, analizar_cv_con_gemini
 def home_view(request):
     return render(request, 'pages/home.html')
 
-def postularse_view(request, vacante_id):
-    vacante = get_object_or_404(Vacante, id=vacante_id)
-    
-    if request.method == "POST":
-        form = PostulacionForm(request.POST, request.FILES)
-        if form.is_valid():
-            postulacion = form.save(commit=False)
-            postulacion.postulante = request.user
-            postulacion.vacante = vacante
+def postulante_view(request):
+    """
+    Vista que muestra vacantes Y procesa la subida de CV con análisis de IA
+    """
+    query = request.GET.get("q", "").strip()
+    rango_salarial = request.GET.get("rango_salarial", "").strip()
+    selected_id = request.GET.get('vacante_id')
+
+    # PROCESAR SUBIDA DE CV (POST)
+    if request.method == "POST" and selected_id:
+        vacante = get_object_or_404(Vacante, id=selected_id)
+        cv_pdf = request.FILES.get('cv_pdf')
+        
+        if cv_pdf and request.user.is_authenticated:
+            # Crear la postulación
+            postulacion = Postulacion(
+                postulante=request.user,
+                vacante=vacante,
+                cv_pdf=cv_pdf
+            )
             
-            # ⭐ ANALIZAR CON IA AUTOMÁTICAMENTE
-            if postulacion.cv_pdf:
+            # ANALIZAR CON IA
+            try:
                 print(f"🤖 Analizando CV con IA para vacante: {vacante.titulo}")
                 
                 # Extraer texto del PDF
-                texto_cv = extraer_texto_pdf(postulacion.cv_pdf.file)
+                texto_cv = extraer_texto_pdf(cv_pdf.file)
                 
                 if texto_cv:
                     # Analizar con Gemini
@@ -45,14 +56,36 @@ def postularse_view(request, vacante_id):
                     print("⚠️ No se pudo extraer texto del PDF")
                     postulacion.score_ia = 0
                     postulacion.razon_ia = "No se pudo extraer texto del CV"
+            except Exception as e:
+                print(f"❌ Error: {e}")
+                postulacion.score_ia = 0
+                postulacion.razon_ia = f"Error: {str(e)}"
             
             postulacion.save()
-            messages.success(request, "¡Has postulado exitosamente! Tu CV ha sido analizado por IA.")
-            return redirect('postulante')
-    else:
-        form = PostulacionForm()
+            messages.success(request, f"¡Postulación exitosa! Tu CV fue calificado con {postulacion.score_ia}/100 por IA.")
+            
+            # Redirigir para evitar reenvío
+            return redirect(f'/postulante/?vacante_id={selected_id}')
+        else:
+            messages.error(request, "Debes subir un PDF y estar autenticado.")
+
+    # MOSTRAR VACANTES (GET)
+    vacantes = Vacante.objects.all().order_by('-fecha_creacion')
+    if query:
+        vacantes = vacantes.annotate(titulo_lower=Lower('titulo')).filter(titulo_lower__icontains=query.lower())
+    if rango_salarial:
+        vacantes = vacantes.filter(rango_salarial__icontains=rango_salarial)
+
+    vacante_seleccionada = Vacante.objects.filter(pk=selected_id).first() if selected_id else None
     
-    return render(request, 'pages/postularse.html', {'form': form, 'vacante': vacante})
+    return render(request, 'pages/postulante.html', {
+        "vacantes": vacantes,
+        "vacante_seleccionada": vacante_seleccionada,
+        "selected_id": selected_id,
+        "query": query,
+        "rango_salarial": rango_salarial,
+    })
+
 
 def reclutador_view(request):
     vacantes = Vacante.objects.all().order_by('-fecha_creacion')
@@ -112,20 +145,6 @@ def editar_vacante(request, vacante_id):
     return render(request, "pages/editar_vacante.html", {"vacante": vacante})
 
 
-def postularse_view(request, vacante_id):
-    vacante = get_object_or_404(Vacante, id=vacante_id)
-    if request.method == "POST":
-        form = PostulacionForm(request.POST, request.FILES)
-        if form.is_valid():
-            postulacion = form.save(commit=False)
-            postulacion.postulante = request.user  # Ajusta según tu modelo de usuario
-            postulacion.vacante = vacante
-            postulacion.save()
-            messages.success(request, "¡Has postulado exitosamente!")
-            return redirect('postulante')
-    else:
-        form = PostulacionForm()
-    return render(request, 'pages/postularse.html', {'form': form, 'vacante': vacante})
 
 def register_view(request):
     if request.method == "POST":
@@ -185,22 +204,13 @@ def login_reclutador_view(request):
 
 def detalle_vacante_reclutador(request, vacante_id):
     vacante = get_object_or_404(Vacante, id=vacante_id)
-    
-    # ⭐ OBTENER POSTULACIONES ORDENADAS POR SCORE IA
-    postulaciones = Postulacion.objects.filter(vacante=vacante).order_by('-score_ia')
-    
-    mejores_candidatos = []
-    for post in postulaciones:
-        if post.score_ia is not None:
-            mejores_candidatos.append({
-                'nombre': post.postulante.username,
-                'email': post.postulante.email,
-                'score': post.score_ia,
-                'ia_razon': post.razon_ia,
-                'cv_url': post.cv_pdf.url if post.cv_pdf else '#'
-            })
-    
+    postulaciones = Postulacion.objects.filter(vacante=vacante)
+    top_candidatos = postulaciones.exclude(score_ia=None).order_by('-score_ia')[:5]
+    recientes = postulaciones.order_by('-fecha_postulacion')[:5]
+    todos = postulaciones.order_by('-score_ia')
     return render(request, 'pages/detalle_vacante_reclutador.html', {
         'vacante': vacante,
-        'mejores_candidatos': mejores_candidatos
+        'top_candidatos': top_candidatos,
+        'recientes': recientes,
+        'todos': todos,
     })
