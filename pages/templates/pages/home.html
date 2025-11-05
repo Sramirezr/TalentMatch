@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,95 +8,256 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             background: #f4f9ff;
-            min-height: 100vh;
-        }
-        .talent-card {
-            background: #fff;
-            border-radius: 24px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-            padding: 2.5rem 2rem 2rem 2rem;
-            margin-top: 4rem;
-        }
-        .bienvenido {
-            font-size: 2.6rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #2061d6;
-        }
-        .perfil-btn {
-            font-size: 1.2rem;
-            padding: 1.3rem 0;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(32,97,214,0.09);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.65rem;
-            transition: background 0.14s, box-shadow 0.14s;
-            margin-bottom: 1rem;
         }
-        .perfil-btn.btn-primary {
-            background: linear-gradient(90deg,#2061d6 70%,#4481eb 100%);
-            border: none;
-            color: #fff;
+        
+        .talent-card {
+            background: #fff;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 2rem 1.5rem;
+            width: 100%;
+            height: 100vh;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .perfil-btn.btn-success {
-            background: linear-gradient(90deg,#29c97e 70%,#43e97b 100%);
-            border: none;
-            color: #fff;
+        
+        .card-content {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
         }
-        .perfil-btn.btn-primary:hover {
-            background: linear-gradient(90deg,#4481eb 40%,#2061d6 100%);
-            box-shadow: 0 4px 16px rgba(32,97,214,0.14);
-            color: #fff;
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
-        .perfil-btn.btn-success:hover {
-            background: linear-gradient(90deg,#43e97b 40%,#29c97e 100%);
-            box-shadow: 0 4px 16px rgba(41,201,126,0.14);
-            color: #fff;
+        
+        .logo {
+            height: 60px;
+            width: auto;
         }
-        .icono-perfil {
-            font-size: 1.65rem;
-            margin-right: 0.5rem;
+        
+        .bienvenido {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2061d6;
+            margin-bottom: 0.3rem;
+            text-align: center;
         }
+        
         .descripcion {
-            font-size: 1.15rem;
-            color: #444;
-            margin-bottom: 2.2rem;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
         }
-        .talent-card a {
+        
+        .form-group {
+            margin-bottom: 0.9rem;
+        }
+        
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+        
+        .form-control {
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-control:focus {
+            border-color: #2061d6;
+            box-shadow: 0 0 0 3px rgba(32,97,214,0.1);
+            outline: none;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(90deg, #2061d6 70%, #4481eb 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-login:hover {
+            background: linear-gradient(90deg, #4481eb 40%, #2061d6 100%);
+            box-shadow: 0 4px 16px rgba(32,97,214,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .separator {
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(90deg, #29c97e 70%, #43e97b 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-register:hover {
+            background: linear-gradient(90deg, #43e97b 40%, #29c97e 100%);
+            box-shadow: 0 4px 16px rgba(41,201,126,0.2);
+            transform: translateY(-2px);
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .reclutador-section {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e8e8e8;
+        }
+        
+        .reclutador-text {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 0.5rem;
+        }
+        
+        .reclutador-link {
+            font-size: 0.85rem;
+            color: #2061d6;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .reclutador-link:hover {
+            color: #4481eb;
+            text-decoration: underline;
+        }
+        
+        .empresa-section {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .empresa-link {
+            color: #2061d6;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .empresa-link:hover {
+            color: #4481eb;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .talent-card {
+                border-radius: 0;
+                padding: 1.5rem;
+            }
+            
+            .bienvenido {
+                font-size: 1.8rem;
+            }
+            
+            .logo {
+                height: 50px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container py-5">
-    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
-        <div class="col-lg-7">
-            <div class="talent-card text-center">
-                <h1 class="bienvenido mb-3">¡Bienvenido a TalentMatch!</h1>
-                <p class="descripcion mb-4">
-                    Elige tu perfil para continuar y accede a las mejores oportunidades.<br>
-                    <span style="color:#2061d6;font-weight:500;">¿Eres reclutador o postulante?</span>
-                </p>
-                <div class="d-grid gap-3">
-                    <a href="{% url 'login_reclutador' %}" class="perfil-btn btn btn-primary">
-                        <i class="bi bi-briefcase-fill icono-perfil"></i> Reclutador
-                    </a>
-                    <a href="{% url 'login' %}" class="perfil-btn btn btn-success">
-                        <i class="bi bi-person-badge-fill icono-perfil"></i> Postulante
-                    </a>
-                    <div class="mt-3 text-center">
-                        <a href="mailto:prueba@gmail.com?subject=Solicitud acceso reclutador" class="btn btn-outline-dark">
-                            ¿Eres empresa? Solicita acceso como reclutador
-                        </a>
-                    </div>
-                </div>
+<div class="talent-card">
+    <div class="card-content">
+        <div class="logo-container">
+            <img src="/media/logo" alt="TalentMatch Logo" class="logo">
+        </div>
+        
+        <h1 class="bienvenido">¡Bienvenido!</h1>
+        <p class="descripcion">Inicia sesión o regístrate</p>
+        
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Email o Usuario</label>
+                <input type="text" name="username" class="form-control" placeholder="usuario@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-control" placeholder="Tu contraseña" required>
+            </div>
+            
+            <button type="submit" class="btn-login">Iniciar Sesión</button>
+        </form>
+        
+        <div class="separator">¿No tienes cuenta?</div>
+        
+        <a href="{% url 'register' %}" class="btn-register">
+            <i class="bi bi-person-plus"></i> Registrarse
+        </a>
+        
+        <div class="reclutador-section">
+            <p class="reclutador-text">¿Eres empresa?</p>
+            <a href="{% url 'login_reclutador' %}" class="reclutador-link">Soy reclutador</a>
+            
+            <div class="empresa-section">
+                <p>o <a href="mailto:prueba@gmail.com?subject=Solicitud acceso reclutador" class="empresa-link">escribe para solicitar acceso</a></p>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
