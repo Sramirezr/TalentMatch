@@ -13,6 +13,10 @@ from django.contrib import messages
 
 # Create your views here.
 def home_view(request):
+    # Si el usuario está autenticado, redirige a postulante
+    if request.user.is_authenticated:
+        return redirect('postulante')
+    
     return render(request, 'pages/home.html')
 
 # pages/views.py - REEMPLAZA la función postulante_view (líneas 17-87)
@@ -182,25 +186,40 @@ def register_view(request):
 
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+        
+        if not username or not password:
+            messages.error(request, "❌ Completa todos los campos.")
+            return render(request, "pages/home.html")
+        
+        # Intentar con username primero
         user = authenticate(request, username=username, password=password)
+        
+        # Si no funciona, intentar con email
+        if user is None:
+            from django.contrib.auth.models import User
+            try:
+                user_obj = User.objects.get(email=username)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                user = None
+        
         if user is not None:
             login(request, user)
-            # Redirige según el tipo de usuario
             if hasattr(user, "profile") and user.profile.user_type == "reclutador":
                 return redirect("reclutador")
             else:
                 return redirect("postulante")
         else:
-            messages.error(request, "Usuario o contraseña incorrectos.")
-    # Usar el mismo template, pero en modo login
-    form = UserRegisterForm()
-    return render(request, "pages/login_register.html", {"form": form, "register_mode": False})
+            messages.error(request, "❌ Usuario o contraseña incorrectos.")
+            return render(request, "pages/home.html")  # ✅ SE QUEDA EN HOME CON MENSAJE DE ERROR
+    
+    return render(request, "pages/home.html")
 
 def logout_view(request):
     logout(request)
-    return redirect("login")
+    return redirect("home")
 
 def login_reclutador_view(request):
     if request.method == "POST":
