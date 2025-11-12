@@ -85,6 +85,48 @@
             text-align: left;
         }
         
+        /* MENSAJES DE ERROR - ESTILOS MEJORADOS */
+        .error-message {
+            background-color: #fee;
+            color: #c33;
+            border: 2px solid #fcc;
+            padding: 15px 18px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            padding: 15px 18px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .form-group {
             margin-bottom: 1rem;
         }
@@ -211,25 +253,6 @@
             text-decoration: underline;
         }
         
-        .alert {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        
         @media (max-width: 1024px) {
             .container-main {
                 flex-direction: column;
@@ -261,15 +284,24 @@
             <h1 class="bienvenido">¡Bienvenido!</h1>
             <p class="descripcion">Inicia sesión o regístrate</p>
             
+            <!-- MENSAJES DE ERROR/SUCCESS -->
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}danger{% endif %}">
-                        {{ message }}
-                    </div>
+                    {% if message.tags == 'error' or message.tags == 'danger' %}
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% else %}
+                        <div class="success-message">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
             
-            <form method="POST" action="{% url 'home' %}">
+            <form method="POST" action="{% url 'login' %}">
                 {% csrf_token %}
                 
                 <div class="form-group">

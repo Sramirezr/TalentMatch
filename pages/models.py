@@ -10,10 +10,10 @@ class Vacante(models.Model):
     palabras_clave = models.CharField(max_length=300, blank=True, null=True)
     rango_salarial = models.CharField(max_length=100, blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    reclutador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='vacantes_creadas', null=True, blank=True)  # 🆕 NUEVO CAMPO
 
     def __str__(self):
         return self.titulo
-
 
 class Postulacion(models.Model):
     # Estados posibles

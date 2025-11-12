@@ -10,6 +10,8 @@ from .forms import UserRegisterForm
 from .models import Profile, Postulacion, Notificacion, Vacante
 from .utils import extraer_texto_pdf, analizar_cv_con_gemini
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+
 
 # Create your views here.
 def home_view(request):
@@ -19,10 +21,19 @@ def home_view(request):
     
     return render(request, 'pages/home.html')
 
+def es_reclutador(user):
+    return hasattr(user, 'profile') and user.profile.user_type == 'reclutador'
+
+# Función que verifica si es postulante
+def es_postulante(user):
+    return hasattr(user, 'profile') and user.profile.user_type == 'postulante'
+
 # pages/views.py - REEMPLAZA la función postulante_view (líneas 17-87)
 
 # pages/views.py - ACTUALIZAR postulante_view para incluir notificaciones
-
+# Proteger vista de postulante
+@login_required
+@user_passes_test(es_postulante, login_url='/login/')
 def postulante_view(request):
     """
     Vista que muestra vacantes Y procesa la subida de CV con análisis de IA
@@ -109,8 +120,11 @@ def postulante_view(request):
         "notificaciones_no_leidas": notificaciones_no_leidas,
     })
 
+@login_required
+@user_passes_test(es_reclutador, login_url='/login_reclutador/')
 def reclutador_view(request):
-    vacantes = Vacante.objects.all().order_by('-fecha_creacion')
+    # Solo mostrar las vacantes creadas por el reclutador actual
+    vacantes = Vacante.objects.filter(reclutador=request.user).order_by('-fecha_creacion')
     return render(request, 'pages/reclutador.html', {'vacantes': vacantes})
 
 def crear_vacante_view(request):
@@ -120,7 +134,7 @@ def crear_vacante_view(request):
 def crear_vacante(request):
     if request.method == "POST":
         titulo = request.POST.get("titulo")
-        nombre_interno = request.POST.get("nombre_interno", "")  # <-- nuevo
+        nombre_interno = request.POST.get("nombre_interno", "")
         descripcion = request.POST.get("descripcion")
         palabras_clave = request.POST.get("palabras_clave", "")
         rango_salarial = request.POST.get("rango_salarial", "")
@@ -130,7 +144,8 @@ def crear_vacante(request):
             nombre_interno=nombre_interno,
             descripcion=descripcion,
             palabras_clave=palabras_clave,
-            rango_salarial=rango_salarial
+            rango_salarial=rango_salarial,
+            reclutador=request.user  # 🆕 ASIGNAR EL RECLUTADOR
         )
 
         return redirect("reclutador")
@@ -179,18 +194,30 @@ def register_view(request):
             Profile.objects.create(user=user, user_type="postulante")
             messages.success(request, "¡Registro exitoso! Ya puedes iniciar sesión.")
             return redirect("login")
+        else:
+            # Los errores se mostrarán automáticamente en el template
+            pass
     else:
         form = UserRegisterForm()
-    # Usar el mismo template, pero en modo registro
+    
     return render(request, "pages/login_register.html", {"form": form, "register_mode": True})
 
+
+def logout_view(request):
+    logout(request)
+    return redirect("home")
+
+    
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
         
+        print(f"🔍 LOGIN ATTEMPT - Username: {username}")
+        
         if not username or not password:
             messages.error(request, "❌ Completa todos los campos.")
+            print("❌ Campos vacíos")
             return render(request, "pages/home.html")
         
         # Intentar con username primero
@@ -206,20 +233,26 @@ def login_view(request):
                 user = None
         
         if user is not None:
+            # 🆕 BLOQUEAR SI ES ADMIN O SUPERUSER
+            if user.is_superuser or user.is_staff:
+                messages.error(request, "❌ Los administradores no pueden acceder como postulantes.")
+                print("❌ Intento de login de admin")
+                return render(request, "pages/home.html")
+            
             login(request, user)
+            print(f"✅ Login exitoso para: {user.username}")
             if hasattr(user, "profile") and user.profile.user_type == "reclutador":
                 return redirect("reclutador")
             else:
                 return redirect("postulante")
         else:
             messages.error(request, "❌ Usuario o contraseña incorrectos.")
-            return render(request, "pages/home.html")  # ✅ SE QUEDA EN HOME CON MENSAJE DE ERROR
+            print("❌ Credenciales incorrectas - Mensaje agregado")
+            return render(request, "pages/home.html")
     
     return render(request, "pages/home.html")
 
-def logout_view(request):
-    logout(request)
-    return redirect("home")
+
 
 def login_reclutador_view(request):
     if request.method == "POST":
