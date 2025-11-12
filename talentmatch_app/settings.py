@@ -11,22 +11,29 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# Cargar variables de entorno desde .env
+load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=vf&=jo!zx2fa_(1lcp()ggpysu#)+rvrvteuu1^%d^_00o$pp'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-=vf&=jo!zx2fa_(1lcp()ggpysu#)+rvrvteuu1^%d^_00o$pp')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['52.73.183.153']
+# ALLOWED_HOSTS - Configuración inteligente
+if DEBUG:
+    # En desarrollo, permite localhost
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+else:
+    # En producción, lee desde variable de entorno
+    allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '52.73.183.153')
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
 
 
 # Application definition
@@ -105,9 +112,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-co'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -119,7 +126,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -130,6 +136,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-LOGIN_URL = 'login'  # Ruta del login correcto
-LOGIN_REDIRECT_URL = 'postulante'  # A dónde ir después de loguearse
-LOGOUT_REDIRECT_URL = 'home'  # A dónde ir después de cerrar sesión
+# Login/Logout URLs
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'postulante'
+LOGOUT_REDIRECT_URL = 'home'
